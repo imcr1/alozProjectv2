@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جولة الفرز الموحدة - المطابقة البصرية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+        
+        * {
+            font-family: 'Tajawal', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+            min-height: 100vh;
+        }
+        
+        .factory-bg {
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F4FF 30%, #FFF5E6 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .factory-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, rgba(255,182,193,0.3) 0%, transparent 100%);
+        }
+        
+        .hint-panel {
+            background: linear-gradient(145deg, #fff8dc, #fffacd);
+            border: 4px solid #ffd700;
+            box-shadow: 0 8px 32px rgba(255, 215, 0, 0.3), 
+                        inset 0 2px 4px rgba(255,255,255,0.8);
+        }
+        
+        .conveyor-belt {
+            background: linear-gradient(90deg, #4a4a4a 0%, #6a6a6a 50%, #4a4a4a 100%);
+            border: 4px solid #333;
+            box-shadow: inset 0 4px 8px rgba(0,0,0,0.4);
+            position: relative;
+        }
+        
+        .conveyor-belt::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 20px,
+                rgba(0,0,0,0.2) 20px,
+                rgba(0,0,0,0.2) 22px
+            );
+            animation: conveyorMove 1s linear infinite;
+        }
+        
+        @keyframes conveyorMove {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 22px; }
+        }
+        
+        .sorting-bin {
+            background: linear-gradient(145deg, #32cd32, #228b22);
+            border: 4px solid #006400;
+            box-shadow: 0 6px 20px rgba(0,100,0,0.3);
+        }
+        
+        .choice-btn {
+            background: linear-gradient(145deg, #fff, #f0f0f0);
+            border: 3px solid #ddd;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .choice-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            border-color: #ffd700;
+        }
+        
+        .choice-btn.correct {
+            animation: correctPulse 0.5s ease;
+            border-color: #32cd32;
+            background: linear-gradient(145deg, #90EE90, #98FB98);
+        }
+        
+        .choice-btn.wrong {
+            animation: wrongShake 0.5s ease;
+            border-color: #ff4444;
+            background: linear-gradient(145deg, #ffcccc, #ffaaaa);
+        }
+        
+        @keyframes correctPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes wrongShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .candy {
+            position: absolute;
+            transition: top 0.1s linear;
+            filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.3));
+        }
+        
+        .candy-circle {
+            border-radius: 50%;
+        }
+        
+        .candy-square {
+            border-radius: 4px;
+        }
+        
+        .candy-star {
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+        
+        .feedback-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            z-index: 1000;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feedback-popup.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .feedback-popup.success {
+            border: 4px solid #32cd32;
+        }
+        
+        .feedback-popup.error {
+            border: 4px solid #ff4444;
+        }
+        
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .score-card {
+            background: linear-gradient(145deg, #4169e1, #1e90ff);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(65,105,225,0.4);
+        }
+        
+        .timer-card {
+            background: linear-gradient(145deg, #ff6347, #ff4500);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(255,99,71,0.4);
+        }
+        
+        .level-card {
+            background: linear-gradient(145deg, #9370db, #8a2be2);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(147,112,219,0.4);
+        }
+        
+        .start-btn {
+            background: linear-gradient(145deg, #ff69b4, #ff1493);
+            color: white;
+            font-size: 1.5rem;
+            padding: 15px 50px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(255,20,147,0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(255,20,147,0.5);
+        }
+        
+        .game-title {
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: none;
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .floating {
+            animation: float 2s ease-in-out infinite;
+        }
+        
+        .candy-small { width: 30px; height: 30px; }
+        .candy-medium { width: 45px; height: 45px; }
+        .candy-large { width: 60px; height: 60px; }
+        
+        .property-badge {
+            background: linear-gradient(145deg, #ffd700, #ffb347);
+            color: #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-top: 10px;
+        }
+        
+        /* Victory Animations */
+        .victory-card {
+            animation: victoryPop 0.6s ease-out;
+        }
+        
+        @keyframes victoryPop {
+            0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+            50% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .victory-text {
+            animation: victoryGlow 1.5s ease-in-out infinite alternate;
+        }
+        
+        @keyframes victoryGlow {
+            0% { text-shadow: 3px 3px 6px rgba(0,0,0,0.3), 0 0 20px rgba(255,255,255,0.5); }
+            100% { text-shadow: 3px 3px 6px rgba(0,0,0,0.3), 0 0 40px rgba(255,255,255,0.9), 0 0 60px rgba(255,215,0,0.6); }
+        }
+        
+        .victory-score {
+            animation: scoreCount 0.5s ease-out, scorePulse 1s ease-in-out infinite 0.5s;
+        }
+        
+        @keyframes scoreCount {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes scorePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .candy-float {
+            display: inline-block;
+            animation: candyFloat 2s ease-in-out infinite;
+        }
+        
+        @keyframes candyFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-15px) rotate(10deg); }
+            75% { transform: translateY(-15px) rotate(-10deg); }
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: confettiFall 3s ease-in-out infinite;
+        }
+        
+        @keyframes confettiFall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(500px) rotate(720deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body class="factory-bg">
+    <div class="overlay" id="overlay"></div>
+    <div class="feedback-popup" id="feedbackPopup">
+        <div id="feedbackText" class="text-2xl font-bold"></div>
+    </div>
+
+    <div class="container mx-auto px-4 py-6 max-w-2xl">
+        <!-- Header -->
+        <header class="text-center mb-6">
+            <h1 class="game-title floating mb-2">🍬 جولة الفرز الموحدة 🍬</h1>
+            <p class="text-lg text-pink-700 font-medium">المطابقة البصرية</p>
+        </header>
+
+        <!-- Score Panel -->
+        <div class="flex justify-center gap-4 mb-6 flex-wrap">
+            <div class="score-card text-center">
+                <div class="text-sm opacity-80">النقاط</div>
+                <div class="text-2xl font-bold" id="scoreDisplay">0</div>
+            </div>
+            <div class="timer-card text-center">
+                <div class="text-sm opacity-80">الوقت</div>
+                <div class="text-2xl font-bold" id="timerDisplay">120</div>
+            </div>
+            <div class="level-card text-center">
+                <div class="text-sm opacity-80">المستوى</div>
+                <div class="text-2xl font-bold" id="levelDisplay">1</div>
+            </div>
+        </div>
+
+        <!-- Game Container -->
+        <div id="gameContainer" class="hidden">
+            <!-- Hint Panel -->
+            <div class="hint-panel rounded-2xl p-6 mb-6">
+                <h2 class="text-xl font-bold text-amber-800 mb-4 text-center">🔍 لوحة الإيحاء</h2>
+                <p class="text-sm text-amber-700 text-center mb-4">اكتشف الخاصية المشتركة بين هذه الحلويات الثلاث</p>
+                <div class="flex justify-center gap-6" id="hintCandies"></div>
+                <div id="commonPropertyHint" class="text-center mt-4"></div>
+            </div>
+
+            <!-- Choice Buttons -->
+            <div class="mb-6" id="choiceSection">
+                <h3 class="text-lg font-bold text-purple-700 text-center mb-4">🎯 اختر الحلوى المطابقة</h3>
+                <div class="flex justify-center gap-4 flex-wrap" id="choiceButtons"></div>
+            </div>
+
+            <!-- Conveyor Belt Section -->
+            <div class="relative mb-6" id="conveyorSection" style="display: none;">
+                <h3 class="text-lg font-bold text-gray-700 text-center mb-4">🏭 الحزام الناقل</h3>
+                <div class="conveyor-belt rounded-xl h-80 relative overflow-hidden" id="conveyorBelt">
+                    <!-- Candies will be spawned here -->
+                </div>
+                
+                <!-- Sorting Bin -->
+                <div class="sorting-bin rounded-xl p-4 mt-4 text-center">
+                    <div class="text-white font-bold text-lg">📦 صندوق الفرز</div>
+                    <div class="text-white text-sm opacity-80">اضغط على الحلويات المطابقة!</div>
+                </div>
+            </div>
+
+            <!-- Match Counter -->
+            <div class="text-center mb-4">
+                <span class="bg-white px-4 py-2 rounded-full shadow-md text-purple-700 font-bold">
+                    المطابقات الصحيحة: <span id="matchCounter">0</span> / <span id="matchTarget">5</span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="startScreen" class="text-center py-10">
+            <div class="bg-white rounded-3xl p-8 shadow-2xl">
+                <h2 class="text-2xl font-bold text-pink-600 mb-4">🎮 كيفية اللعب</h2>
+                <div class="text-right text-gray-700 space-y-3 mb-6">
+                    <p>1️⃣ انظر إلى <strong>لوحة الإيحاء</strong> واكتشف الخاصية المشتركة</p>
+                    <p>2️⃣ اختر الحلوى التي تحمل نفس الخاصية</p>
+                    <p>3️⃣ في مرحلة الفرز، اضغط على الحلويات المطابقة</p>
+                    <p class="text-green-600">✅ +10 نقاط للفرز الصحيح</p>
+                    <p class="text-red-600">❌ -5 نقاط للفرز الخاطئ</p>
+                    <p class="text-orange-600">⚠️ -2 نقاط للحلوى الفائتة</p>
+                </div>
+                <button class="start-btn" onclick="game.start()">🚀 ابدأ اللعبة</button>
+                
+                <!-- Author Credit -->
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <div class="flex flex-col items-center gap-3">
+                        <img src="pfp.jpeg" alt="أ.علي إبراهيم عبدالرسول" class="w-20 h-20 rounded-full object-cover shadow-lg border-4 border-pink-300">
+                        <p class="text-gray-600 font-medium">فكرة وتنفيذ : <span class="text-purple-600 font-bold">أ.علي إبراهيم عبدالرسول</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="hidden text-center py-10">
+            <div class="bg-white rounded-3xl p-8 shadow-2xl">
+                <h2 class="text-3xl font-bold text-pink-600 mb-4">🏆 انتهت اللعبة!</h2>
+                <div class="text-6xl mb-4">🍬</div>
+                <p class="text-2xl text-gray-700 mb-2">النتيجة النهائية</p>
+                <p class="text-5xl font-bold text-purple-600 mb-4" id="finalScore">0</p>
+                <p class="text-lg text-gray-600 mb-6">المستوى الذي وصلت إليه: <span id="finalLevel" class="font-bold text-purple-600">1</span></p>
+                <button class="start-btn" onclick="game.restart()">🔄 العب مرة أخرى</button>
+            </div>
+        </div>
+
+        <!-- Victory Screen -->
+        <div id="victoryScreen" class="hidden text-center py-10 relative">
+            <div id="confetti-container"></div>
+            <div class="victory-card bg-gradient-to-br from-yellow-300 via-pink-300 to-purple-400 rounded-3xl p-8 shadow-2xl relative z-10">
+                <div class="victory-stars text-6xl mb-4 animate-bounce">⭐🏆⭐</div>
+                <h2 class="victory-text text-5xl font-bold text-white mb-6" style="text-shadow: 3px 3px 6px rgba(0,0,0,0.3);">🎉 مبروك! 🎉</h2>
+                <p class="text-2xl text-white mb-2">أكملت جميع المستويات!</p>
+                <div class="bg-white/30 backdrop-blur rounded-2xl p-6 my-6">
+                    <p class="text-xl text-white mb-2">النتيجة النهائية</p>
+                    <p class="text-6xl font-bold text-white victory-score" id="victoryScore">0</p>
+                </div>
+                <div class="flex justify-center gap-2 mb-6">
+                    <span class="text-4xl candy-float" style="animation-delay: 0s;">🍬</span>
+                    <span class="text-4xl candy-float" style="animation-delay: 0.2s;">🍭</span>
+                    <span class="text-4xl candy-float" style="animation-delay: 0.4s;">🍫</span>
+                    <span class="text-4xl candy-float" style="animation-delay: 0.6s;">🍩</span>
+                    <span class="text-4xl candy-float" style="animation-delay: 0.8s;">🧁</span>
+                </div>
+                <button class="start-btn bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600" onclick="game.restart()">🔄 العب مرة أخرى</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Candy Class
+        class Candy {
+            static COLORS = {
+                red: '#ff4444',
+                yellow: '#ffd700',
+                blue: '#4169e1',
+                green: '#32cd32',
+                purple: '#9370db',
+                orange: '#ff8c00'
+            };
+            
+            static COLOR_NAMES_AR = {
+                red: 'أحمر',
+                yellow: 'أصفر',
+                blue: 'أزرق',
+                green: 'أخضر',
+                purple: 'بنفسجي',
+                orange: 'برتقالي'
+            };
+            
+            static SHAPES = ['circle', 'square', 'star'];
+            static SHAPE_NAMES_AR = {
+                circle: 'دائرة',
+                square: 'مربع',
+                star: 'نجمة'
+            };
+            
+            static SIZES = ['small', 'medium', 'large'];
+            static SIZE_NAMES_AR = {
+                small: 'صغير',
+                medium: 'متوسط',
+                large: 'كبير'
+            };
+            
+            constructor(color = null, shape = null, size = null) {
+                const colors = Object.keys(Candy.COLORS);
+                this.color = color || colors[Math.floor(Math.random() * colors.length)];
+                this.shape = shape || Candy.SHAPES[Math.floor(Math.random() * Candy.SHAPES.length)];
+                this.size = size || Candy.SIZES[Math.floor(Math.random() * Candy.SIZES.length)];
+                this.id = Math.random().toString(36).substr(2, 9);
+            }
+            
+            static getRandomColor() {
+                const colors = Object.keys(Candy.COLORS);
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            static getRandomShape() {
+                return Candy.SHAPES[Math.floor(Math.random() * Candy.SHAPES.length)];
+            }
+            
+            static getRandomSize() {
+                return Candy.SIZES[Math.floor(Math.random() * Candy.SIZES.length)];
+            }
+            
+            generateElement(forConveyor = false) {
+                const div = document.createElement('div');
+                const sizeClass = `candy-${this.size}`;
+                const shapeClass = `candy-${this.shape}`;
+                
+                div.className = `${sizeClass} ${shapeClass} ${forConveyor ? 'candy' : ''} inline-block`;
+                div.style.backgroundColor = Candy.COLORS[this.color];
+                div.style.border = '3px solid rgba(255,255,255,0.5)';
+                div.style.boxShadow = `inset -3px -3px 8px rgba(0,0,0,0.2), inset 3px 3px 8px rgba(255,255,255,0.4)`;
+                
+                if (forConveyor) {
+                    div.dataset.candyId = this.id;
+                    div.dataset.color = this.color;
+                    div.dataset.shape = this.shape;
+                    div.dataset.size = this.size;
+                }
+                
+                return div;
+            }
+            
+            matches(property, value) {
+                return this[property] === value;
+            }
+            
+            getPropertyValue(property) {
+                return this[property];
+            }
+            
+            static getPropertyNameAr(property) {
+                const names = {
+                    color: 'اللون',
+                    shape: 'الشكل',
+                    size: 'الحجم'
+                };
+                return names[property];
+            }
+            
+            static getValueNameAr(property, value) {
+                if (property === 'color') return Candy.COLOR_NAMES_AR[value];
+                if (property === 'shape') return Candy.SHAPE_NAMES_AR[value];
+                if (property === 'size') return Candy.SIZE_NAMES_AR[value];
+                return value;
+            }
+        }
+        
+        // Game Class
+        class Game {
+            constructor() {
+                this.score = 0;
+                this.timeLeft = 120;
+                this.level = 1;
+                this.isRunning = false;
+                this.currentPhase = 'deduction'; // 'deduction' or 'sorting'
+                this.commonProperty = null;
+                this.commonValue = null;
+                this.correctMatches = 0;
+                this.matchTargets = [5, 7, 10];
+                this.conveyorCandies = [];
+                this.spawnInterval = null;
+                this.gameLoopInterval = null;
+                this.timerInterval = null;
+                
+                // Property order for levels (shuffled at game start)
+                this.propertyOrder = ['color', 'shape', 'size'];
+                
+                // Level configurations
+                this.levelConfigs = {
+                    1: { candySpeed: 2.0, spawnRate: 1200, matchTarget: 4 },
+                    2: { candySpeed: 2.8, spawnRate: 900, matchTarget: 5 },
+                    3: { candySpeed: 3.5, spawnRate: 700, matchTarget: 6 }
+                };
+                this.initElements();
+            }
+            
+            initElements() {
+                this.scoreDisplay = document.getElementById('scoreDisplay');
+                this.timerDisplay = document.getElementById('timerDisplay');
+                this.levelDisplay = document.getElementById('levelDisplay');
+                this.gameContainer = document.getElementById('gameContainer');
+                this.startScreen = document.getElementById('startScreen');
+                this.gameOverScreen = document.getElementById('gameOverScreen');
+                this.hintCandies = document.getElementById('hintCandies');
+                this.choiceButtons = document.getElementById('choiceButtons');
+                this.choiceSection = document.getElementById('choiceSection');
+                this.conveyorSection = document.getElementById('conveyorSection');
+                this.conveyorBelt = document.getElementById('conveyorBelt');
+                this.matchCounter = document.getElementById('matchCounter');
+                this.matchTarget = document.getElementById('matchTarget');
+                this.commonPropertyHint = document.getElementById('commonPropertyHint');
+                this.overlay = document.getElementById('overlay');
+                this.feedbackPopup = document.getElementById('feedbackPopup');
+                this.feedbackText = document.getElementById('feedbackText');
+            }
+            
+            start() {
+                this.reset();
+                this.startScreen.classList.add('hidden');
+                this.gameOverScreen.classList.add('hidden');
+                document.getElementById('victoryScreen').classList.add('hidden');
+                this.gameContainer.classList.remove('hidden');
+                this.isRunning = true;
+                this.startTimer();
+                this.generateDeductionRound();
+            }
+            
+            reset() {
+                this.score = 0;
+                this.timeLeft = 120;
+                this.level = 1;
+                this.correctMatches = 0;
+                this.currentPhase = 'deduction';
+                this.conveyorCandies = [];
+                
+                // Shuffle property order for this game session
+                this.propertyOrder = ['color', 'shape', 'size'];
+                this.shuffleArray(this.propertyOrder);
+                
+                this.updateDisplays();
+                this.clearConveyor();
+                this.stopIntervals();
+            }
+            
+            restart() {
+                this.start();
+            }
+            
+            updateDisplays() {
+                this.scoreDisplay.textContent = this.score;
+                this.timerDisplay.textContent = this.timeLeft;
+                this.levelDisplay.textContent = this.level;
+                this.matchCounter.textContent = this.correctMatches;
+                this.matchTarget.textContent = this.levelConfigs[this.level].matchTarget;
+            }
+            
+            startTimer() {
+                this.timerInterval = setInterval(() => {
+                    this.timeLeft--;
+                    this.timerDisplay.textContent = this.timeLeft;
+                    
+                    if (this.timeLeft <= 10) {
+                        this.timerDisplay.parentElement.classList.add('animate-pulse');
+                    }
+                    
+                    if (this.timeLeft <= 0) {
+                        this.gameOver();
+                    }
+                }, 1000);
+            }
+            
+            stopIntervals() {
+                if (this.timerInterval) clearInterval(this.timerInterval);
+                if (this.spawnInterval) clearInterval(this.spawnInterval);
+                if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
+            }
+            
+            generateDeductionRound() {
+                this.currentPhase = 'deduction';
+                this.choiceSection.style.display = 'block';
+                this.conveyorSection.style.display = 'none';
+                this.commonPropertyHint.innerHTML = '';
+                
+                // Use property based on current level (each level has unique category)
+                this.commonProperty = this.propertyOrder[this.level - 1];
+                
+                // Get a random value for that property
+                let possibleValues;
+                if (this.commonProperty === 'color') {
+                    possibleValues = Object.keys(Candy.COLORS);
+                } else if (this.commonProperty === 'shape') {
+                    possibleValues = Candy.SHAPES;
+                } else {
+                    possibleValues = Candy.SIZES;
+                }
+                this.commonValue = possibleValues[Math.floor(Math.random() * possibleValues.length)];
+                
+                // Generate 3 hint candies with the common property but varying other properties
+                const hintCandies = this.generateHintCandies();
+                this.displayHintCandies(hintCandies);
+                
+                // Generate choice buttons
+                this.generateChoiceButtons();
+            }
+            
+            generateHintCandies() {
+                const candies = [];
+                const usedCombinations = new Set();
+                
+                for (let i = 0; i < 3; i++) {
+                    let candy;
+                    let attempts = 0;
+                    
+                    do {
+                        let color, shape, size;
+                        
+                        if (this.commonProperty === 'color') {
+                            color = this.commonValue;
+                            shape = Candy.getRandomShape();
+                            size = Candy.getRandomSize();
+                        } else if (this.commonProperty === 'shape') {
+                            color = Candy.getRandomColor();
+                            shape = this.commonValue;
+                            size = Candy.getRandomSize();
+                        } else {
+                            color = Candy.getRandomColor();
+                            shape = Candy.getRandomShape();
+                            size = this.commonValue;
+                        }
+                        
+                        const combo = `${color}-${shape}-${size}`;
+                        if (!usedCombinations.has(combo)) {
+                            usedCombinations.add(combo);
+                            candy = new Candy(color, shape, size);
+                            break;
+                        }
+                        attempts++;
+                    } while (attempts < 50);
+                    
+                    if (candy) candies.push(candy);
+                }
+                
+                return candies;
+            }
+            
+            displayHintCandies(candies) {
+                this.hintCandies.innerHTML = '';
+                candies.forEach(candy => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'bg-white p-4 rounded-xl shadow-lg flex items-center justify-center';
+                    wrapper.style.minWidth = '80px';
+                    wrapper.style.minHeight = '80px';
+                    wrapper.appendChild(candy.generateElement());
+                    this.hintCandies.appendChild(wrapper);
+                });
+            }
+            
+            generateChoiceButtons() {
+                this.choiceButtons.innerHTML = '';
+                
+                // One correct candy (has the common property)
+                const correctCandy = new Candy();
+                if (this.commonProperty === 'color') {
+                    correctCandy.color = this.commonValue;
+                } else if (this.commonProperty === 'shape') {
+                    correctCandy.shape = this.commonValue;
+                } else {
+                    correctCandy.size = this.commonValue;
+                }
+                
+                // Two wrong candies (don't have the common property value)
+                const wrongCandies = [];
+                for (let i = 0; i < 2; i++) {
+                    let wrongCandy;
+                    let attempts = 0;
+                    
+                    do {
+                        wrongCandy = new Candy();
+                        // Make sure this candy doesn't have the common property value
+                        if (this.commonProperty === 'color') {
+                            const colors = Object.keys(Candy.COLORS).filter(c => c !== this.commonValue);
+                            wrongCandy.color = colors[Math.floor(Math.random() * colors.length)];
+                        } else if (this.commonProperty === 'shape') {
+                            const shapes = Candy.SHAPES.filter(s => s !== this.commonValue);
+                            wrongCandy.shape = shapes[Math.floor(Math.random() * shapes.length)];
+                        } else {
+                            const sizes = Candy.SIZES.filter(s => s !== this.commonValue);
+                            wrongCandy.size = sizes[Math.floor(Math.random() * sizes.length)];
+                        }
+                        attempts++;
+                    } while (attempts < 20);
+                    
+                    wrongCandies.push(wrongCandy);
+                }
+                
+                // Shuffle all candies
+                const allCandies = [correctCandy, ...wrongCandies];
+                this.shuffleArray(allCandies);
+                
+                // Create buttons
+                allCandies.forEach(candy => {
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn p-6 rounded-2xl flex items-center justify-center';
+                    btn.style.minWidth = '100px';
+                    btn.style.minHeight = '100px';
+                    btn.appendChild(candy.generateElement());
+                    
+                    const isCorrect = candy.matches(this.commonProperty, this.commonValue);
+                    
+                    btn.addEventListener('click', () => this.handleChoiceClick(btn, isCorrect));
+                    
+                    this.choiceButtons.appendChild(btn);
+                });
+            }
+            
+            handleChoiceClick(button, isCorrect) {
+                if (!this.isRunning || this.currentPhase !== 'deduction') return;
+                
+                const allButtons = this.choiceButtons.querySelectorAll('button');
+                allButtons.forEach(btn => btn.disabled = true);
+                
+                if (isCorrect) {
+                    button.classList.add('correct');
+                    this.showFeedback(`✅ صحيح! الخاصية المشتركة: ${Candy.getPropertyNameAr(this.commonProperty)} - ${Candy.getValueNameAr(this.commonProperty, this.commonValue)}`, 'success');
+                    
+                    // Show the common property
+                    this.commonPropertyHint.innerHTML = `
+                        <span class="property-badge">
+                            ${Candy.getPropertyNameAr(this.commonProperty)}: ${Candy.getValueNameAr(this.commonProperty, this.commonValue)}
+                        </span>
+                    `;
+                    
+                    setTimeout(() => {
+                        this.startSortingPhase();
+                    }, 1500);
+                } else {
+                    button.classList.add('wrong');
+                    this.score -= 5;
+                    this.updateDisplays();
+                    this.showFeedback('❌ خطأ! حاول مرة أخرى', 'error');
+                    
+                    setTimeout(() => {
+                        allButtons.forEach(btn => {
+                            btn.disabled = false;
+                            btn.classList.remove('wrong');
+                        });
+                    }, 1000);
+                }
+            }
+            
+            startSortingPhase() {
+                this.currentPhase = 'sorting';
+                this.choiceSection.style.display = 'none';
+                this.conveyorSection.style.display = 'block';
+                
+                const config = this.levelConfigs[this.level];
+                
+                // Start spawning candies
+                this.spawnInterval = setInterval(() => {
+                    this.spawnCandy();
+                }, config.spawnRate);
+                
+                // Start game loop
+                this.gameLoopInterval = setInterval(() => {
+                    this.updateConveyor();
+                }, 50);
+                
+                // Spawn first candy immediately
+                this.spawnCandy();
+            }
+            
+            spawnCandy() {
+                if (!this.isRunning || this.currentPhase !== 'sorting') return;
+                
+                const candy = new Candy();
+                const element = candy.generateElement(true);
+                
+                // Random horizontal position
+                const beltWidth = this.conveyorBelt.offsetWidth;
+                const candySize = candy.size === 'small' ? 30 : candy.size === 'medium' ? 45 : 60;
+                const maxX = beltWidth - candySize - 20;
+                const x = Math.random() * maxX + 10;
+                
+                element.style.left = `${x}px`;
+                element.style.top = '-60px';
+                element.style.cursor = 'pointer';
+                
+                // Add click handler
+                element.addEventListener('click', (e) => this.handleCandyClick(e, candy, element));
+                
+                this.conveyorBelt.appendChild(element);
+                this.conveyorCandies.push({ candy, element, y: -60 });
+            }
+            
+            handleCandyClick(event, candy, element) {
+                if (!this.isRunning || this.currentPhase !== 'sorting') return;
+                
+                event.stopPropagation();
+                
+                const isMatch = candy.matches(this.commonProperty, this.commonValue);
+                
+                if (isMatch) {
+                    this.score += 10;
+                    this.correctMatches++;
+                    element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                    element.style.transform = 'scale(1.5)';
+                    element.style.opacity = '0';
+                    this.showFeedback('🎉 +10 نقاط!', 'success', true);
+                } else {
+                    this.score -= 5;
+                    element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+                    element.style.transform = 'rotate(180deg) scale(0.5)';
+                    element.style.opacity = '0';
+                    this.showFeedback('❌ -5 نقاط!', 'error', true);
+                }
+                
+                this.updateDisplays();
+                
+                // Remove from tracking
+                this.conveyorCandies = this.conveyorCandies.filter(c => c.candy.id !== candy.id);
+                
+                setTimeout(() => {
+                    if (element.parentNode) {
+                        element.remove();
+                    }
+                }, 300);
+                
+                // Check for level up
+                this.checkLevelUp();
+            }
+            
+            updateConveyor() {
+                if (!this.isRunning || this.currentPhase !== 'sorting') return;
+                
+                const config = this.levelConfigs[this.level];
+                const beltHeight = this.conveyorBelt.offsetHeight;
+                
+                this.conveyorCandies = this.conveyorCandies.filter(({ candy, element, y }) => {
+                    const newY = y + config.candySpeed;
+                    
+                    if (newY >= beltHeight) {
+                        // Candy reached the end
+                        const isMatch = candy.matches(this.commonProperty, this.commonValue);
+                        
+                        if (isMatch) {
+                            // Missed a matching candy
+                            this.score -= 2;
+                            this.showFeedback('⚠️ فاتتك حلوى! -2', 'error', true);
+                        }
+                        
+                        this.updateDisplays();
+                        element.remove();
+                        return false;
+                    }
+                    
+                    element.style.top = `${newY}px`;
+                    // Update stored y position
+                    const candyData = this.conveyorCandies.find(c => c.candy.id === candy.id);
+                    if (candyData) candyData.y = newY;
+                    
+                    return true;
+                });
+            }
+            
+            checkLevelUp() {
+                const config = this.levelConfigs[this.level];
+                
+                if (this.correctMatches >= config.matchTarget && this.level < 3) {
+                    this.level++;
+                    this.correctMatches = 0;
+                    this.updateDisplays();
+                    
+                    // Clear current phase and restart
+                    this.clearConveyor();
+                    if (this.spawnInterval) clearInterval(this.spawnInterval);
+                    if (this.gameLoopInterval) clearInterval(this.gameLoopInterval);
+                    
+                    this.showFeedback(`🎊 مبروك! وصلت للمستوى ${this.level}`, 'success');
+                    
+                    setTimeout(() => {
+                        this.generateDeductionRound();
+                    }, 2000);
+                } else if (this.correctMatches >= config.matchTarget && this.level === 3) {
+                    // Completed all 3 levels - VICTORY!
+                    this.victory();
+                }
+            }
+            
+            clearConveyor() {
+                this.conveyorBelt.innerHTML = '';
+                this.conveyorCandies = [];
+            }
+            
+            showFeedback(message, type, quick = false) {
+                this.feedbackText.textContent = message;
+                this.feedbackPopup.className = `feedback-popup ${type} show`;
+                
+                if (!quick) {
+                    this.overlay.classList.add('show');
+                }
+                
+                setTimeout(() => {
+                    this.feedbackPopup.classList.remove('show');
+                    this.overlay.classList.remove('show');
+                }, quick ? 800 : 1500);
+            }
+            
+            gameOver() {
+                this.isRunning = false;
+                this.stopIntervals();
+                this.clearConveyor();
+                
+                this.gameContainer.classList.add('hidden');
+                this.gameOverScreen.classList.remove('hidden');
+                
+                document.getElementById('finalScore').textContent = this.score;
+                document.getElementById('finalLevel').textContent = this.level;
+            }
+            
+            victory() {
+                this.isRunning = false;
+                this.stopIntervals();
+                this.clearConveyor();
+                
+                this.gameContainer.classList.add('hidden');
+                this.gameOverScreen.classList.add('hidden');
+                const victoryScreen = document.getElementById('victoryScreen');
+                victoryScreen.classList.remove('hidden');
+                
+                // Animate score counting
+                const victoryScoreEl = document.getElementById('victoryScore');
+                this.animateScore(victoryScoreEl, this.score);
+                
+                // Create confetti
+                this.createConfetti();
+            }
+            
+            animateScore(element, targetScore) {
+                let currentScore = 0;
+                const increment = Math.ceil(targetScore / 30);
+                const interval = setInterval(() => {
+                    currentScore += increment;
+                    if (currentScore >= targetScore) {
+                        currentScore = targetScore;
+                        clearInterval(interval);
+                    }
+                    element.textContent = currentScore;
+                }, 50);
+            }
+            
+            createConfetti() {
+                const container = document.getElementById('confetti-container');
+                container.innerHTML = '';
+                const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3', '#ff9f43'];
+                
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + '%';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = Math.random() * 3 + 's';
+                    confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+                    
+                    // Random shapes
+                    const shapes = ['50%', '0%', '30%'];
+                    confetti.style.borderRadius = shapes[Math.floor(Math.random() * shapes.length)];
+                    
+                    container.appendChild(confetti);
+                }
+            }
+            
+            shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+        }
+        
+        // Initialize game
+        const game = new Game();
+    </script>
+</body>
+</html>
