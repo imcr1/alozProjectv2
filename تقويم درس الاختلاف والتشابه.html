@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>لعبة المتماثل والمختلف</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    direction: rtl;
+    text-align: center;
+    background: #f5f8ff;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 {
+    margin-top: 10px;
+  }
+  #question {
+    margin-top: 10px;
+    font-size: 22px;
+  }
+  #game-area {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .item {
+    width: 90px;
+    height: 90px;
+    font-size: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #ffffff;
+    border-radius: 15px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .item:hover {
+    transform: scale(1.07);
+  }
+  #options {
+    margin-top: 20px;
+  }
+  .btn {
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 10px;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .btn-secondary {
+    background: #ecf0f1;
+    color: #2c3e50;
+  }
+  #message {
+    margin-top: 20px;
+    font-size: 22px;
+    font-weight: bold;
+  }
+  .correct { color: #27ae60; }
+  .wrong   { color: #e74c3c; }
+</style>
+</head>
+<body>
+
+<h1>🎮 لعبة المتماثل والمختلف</h1>
+<p id="instruction">جاوب عن السؤال في كل مرة، وستنتقل اللعبة تلقائيًا للسؤال التالي عند الإجابة الصحيحة.</p>
+
+<div id="question"></div>
+<div id="game-area"></div>
+<div id="options"></div>
+<div id="message"></div>
+
+<script>
+// تعريف المستويات
+const levels = [
+  { // 1: صِد المختلف
+    type: "find-different",
+    question: "اضغط على الصورة المختلفة:",
+    items: ["🍎","🍎","🍎","🍌"]
+  },
+  { // 2: صِد المختلف
+    type: "find-different",
+    question: "أين الصورة المختلفة بين هذه الوجوه؟",
+    items: ["😀","😀","😀","😢"]
+  },
+  { // 3: متماثل أو مختلف؟
+    type: "same-or-different",
+    question: "هل هاتان الصورتان متماثلتان أم مختلفتان؟",
+    pair: ["⚽","⚽"],
+    answer: "same"
+  },
+  { // 4: متماثل أو مختلف؟
+    type: "same-or-different",
+    question: "هل هاتان الصورتان متماثلتان أم مختلفتان؟",
+    pair: ["🐱","🐶"],
+    answer: "different"
+  },
+  { // 5: كوّن مجموعة متماثلة
+    type: "make-group",
+    question: "اضغط على كل الصور المتماثلة :",
+    model: "🍓",
+    options: ["🍎","🍓","🍌","🍓"]
+  },
+  { // 6: كوّن مجموعة متماثلة
+    type: "make-group",
+    question: "اضغط على كل الصور المتماثلة :",
+    model: "🚗",
+    options: ["🚗","🚌","🚲","🚗","🚗"]
+  }
+];
+
+let currentLevel = 0;
+let selectedIndexes = [];
+let modelSelected = false;
+
+const questionDiv = document.getElementById("question");
+const gameArea    = document.getElementById("game-area");
+const optionsDiv  = document.getElementById("options");
+const messageDiv  = document.getElementById("message");
+
+function clearUI() {
+  questionDiv.textContent = "";
+  gameArea.innerHTML = "";
+  optionsDiv.innerHTML = "";
+  messageDiv.textContent = "";
+  messageDiv.className = "";
+  selectedIndexes = [];
+  modelSelected = false;
+}
+
+function goNextLevel() {
+  currentLevel++;
+  if (currentLevel >= levels.length) {
+    showCongratulations();
+  } else {
+    setTimeout(loadLevel, 800);
+  }
+}
+
+function showCongratulations() {
+  clearUI();
+  questionDiv.textContent = "🎉 مبروك! أنهيت جميع مراحل اللعبة.";
+  messageDiv.textContent = "رائع! أنت بطل المتماثل والمختلف 👏 استمر في اللعب والتعلّم.";
+  messageDiv.className = "correct";
+
+  const replayBtn = document.createElement("button");
+  replayBtn.className = "btn btn-secondary";
+  replayBtn.textContent = "إعادة اللعب 🔁";
+  replayBtn.onclick = () => {
+    currentLevel = 0;
+    loadLevel();
+  };
+  optionsDiv.appendChild(replayBtn);
+}
+
+function loadLevel() {
+  clearUI();
+  const level = levels[currentLevel];
+  questionDiv.textContent = level.question;
+
+  if (level.type === "find-different")      renderFindDifferent(level);
+  else if (level.type === "same-or-different") renderSameOrDifferent(level);
+  else if (level.type === "make-group")     renderMakeGroup(level);
+}
+
+// 1) صِد المختلف
+function renderFindDifferent(level) {
+  level.items.forEach(icon => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.textContent = icon;
+
+    const isDifferent = (icon !== level.items[0]);
+
+    div.onclick = function() {
+      if (isDifferent) {
+        messageDiv.textContent = "✔️ أحسنت! هذه الصورة مختلفة عن الباقي.";
+        messageDiv.className = "correct";
+        goNextLevel();
+      } else {
+        messageDiv.textContent = "❌ ليست مختلفة، جرّب مرة أخرى.";
+        messageDiv.className = "wrong";
+      }
+    };
+
+    gameArea.appendChild(div);
+  });
+}
+
+// 2) متماثل أو مختلف؟
+function renderSameOrDifferent(level) {
+  level.pair.forEach(icon => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.textContent = icon;
+    gameArea.appendChild(div);
+  });
+
+  const sameBtn = document.createElement("button");
+  sameBtn.className = "btn btn-secondary";
+  sameBtn.textContent = "متماثل";
+
+  const diffBtn = document.createElement("button");
+  diffBtn.className = "btn btn-secondary";
+  diffBtn.textContent = "مختلف";
+
+  sameBtn.onclick = () => checkSameDifferent(level, "same");
+  diffBtn.onclick = () => checkSameDifferent(level, "different");
+
+  optionsDiv.appendChild(sameBtn);
+  optionsDiv.appendChild(diffBtn);
+}
+
+function checkSameDifferent(level, choice) {
+  if (choice === level.answer) {
+    messageDiv.textContent = "✔️ إجابة صحيحة.";
+    messageDiv.className = "correct";
+    goNextLevel();
+  } else {
+    messageDiv.textContent = "❌ إجابة غير صحيحة، حاول مرة أخرى.";
+    messageDiv.className = "wrong";
+  }
+}
+
+// 3) كوّن مجموعة متماثلة 
+function renderMakeGroup(level) {
+  const modelLabel = document.createElement("div");
+  modelLabel.textContent = "النموذج:";
+
+  const modelItem = document.createElement("div");
+  modelItem.className = "item";
+  modelItem.textContent = level.model;
+
+  modelItem.onclick = function () {
+    modelSelected = !modelSelected;
+    modelItem.style.borderColor = modelSelected ? "#3498db" : "transparent";
+  };
+
+  const modelWrapper = document.createElement("div");
+  modelWrapper.style.display = "flex";
+  modelWrapper.style.justifyContent = "center";
+  modelWrapper.style.alignItems = "center";
+  modelWrapper.style.gap = "15px";
+  modelWrapper.style.marginBottom = "15px";
+  modelWrapper.appendChild(modelLabel);
+  modelWrapper.appendChild(modelItem);
+  gameArea.appendChild(modelWrapper);
+
+  level.options.forEach((icon, index) => {
+    const div = document.createElement("div");
+    div.className = "item";
+    div.textContent = icon;
+
+    div.onclick = function () {
+      if (selectedIndexes.includes(index)) {
+        selectedIndexes = selectedIndexes.filter(i => i !== index);
+        div.style.borderColor = "transparent";
+      } else {
+        selectedIndexes.push(index);
+        div.style.borderColor = "#3498db";
+      }
+    };
+
+    gameArea.appendChild(div);
+  });
+
+  const checkBtn = document.createElement("button");
+  checkBtn.className = "btn btn-secondary";
+  checkBtn.textContent = "تحقق من الإجابة";
+  checkBtn.onclick = () => checkMakeGroup(level);
+
+  optionsDiv.appendChild(checkBtn);
+}
+
+function arraysEqual(a, b) {
+  if (a.length !== b.length) return false;
+  const A = [...a].sort();
+  const B = [...b].sort();
+  for (let i = 0; i < A.length; i++) {
+    if (A[i] !== B[i]) return false;
+  }
+  return true;
+}
+
+function checkMakeGroup(level) {
+  const targetIndexes = [];
+  level.options.forEach((icon, index) => {
+    if (icon === level.model) targetIndexes.push(index);
+  });
+
+  const optionsOk = arraysEqual(selectedIndexes, targetIndexes);
+  const modelOk   = modelSelected;
+
+  if (optionsOk && modelOk) {
+    messageDiv.textContent = "✔️ أحسنت! اخترت كل الصور المتماثلة.";
+    messageDiv.className = "correct";
+    goNextLevel();
+  } else {
+    messageDiv.textContent = "❌ الإجابة خطأ، تأكد من اختيار كل الصور المتطابقة.";
+    messageDiv.className = "wrong";
+  }
+}
+
+// بدء اللعبة
+loadLevel();
+</script>
+
+</body>
+</html>

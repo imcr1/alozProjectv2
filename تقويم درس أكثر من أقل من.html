@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>لعبة أكثر من و أقل من بالتقابل 1:1</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    direction: rtl;
+    text-align: center;
+    background: #f5f8ff;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 { margin-top: 10px; }
+  #question { margin-top: 10px; font-size: 22px; }
+  #game-area {
+    margin-top: 25px;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+  .group {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 16px;
+    border: 3px solid #d0d7ff;
+    min-width: 220px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .group.clickable:hover {
+    transform: scale(1.05);
+    border-color: #82a0ff;
+  }
+  .group-title {
+    font-size: 18px;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  .items-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 60px;
+    margin-bottom: 6px;
+  }
+  .item {
+    width: 40px;
+    height: 40px;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fdfefe;
+    border-radius: 10px;
+    border: 2px solid #e0e4ff;
+  }
+  #message {
+    margin-top: 20px;
+    font-size: 22px;
+    font-weight: bold;
+  }
+  .correct { color: #27ae60; }
+  .wrong   { color: #e74c3c; }
+  .btn {
+    padding: 10px 20px;
+    margin: 5px;
+    border-radius: 10px;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+  }
+  .btn-main { background: #3498db; color: white; }
+  .btn-light { background: #ecf0f1; color: #2c3e50; }
+</style>
+</head>
+<body>
+
+<h1>🎮 لعبة أكثر من و أقل من</h1>
+<p id="instruction">جاوب عن السؤال في كل مرة، وستنتقل اللعبة تلقائيًا للسؤال التالي عند الإجابة الصحيحة.</p>
+
+<div id="question"></div>
+<div id="game-area"></div>
+<div id="controls"></div>
+<div id="message"></div>
+
+<script>
+// الآن اللعبة فقط بنوعين: choose و build
+const levels = [
+  { type: "choose", mode: "more", left: 2, right: 5, icon: "🍎" },
+  { type: "choose", mode: "less", left: 6, right: 3, icon: "⚽" },
+  { type: "build", mode: "more", base: 3, icon: "🍓" },
+  { type: "build", mode: "less", base: 5, icon: "🚗" },
+  { type: "choose", mode: "more", left: 4, right: 7, icon: "🐟" },
+  { type: "build", mode: "more", base: 4, icon: "⭐" }
+];
+
+let currentLevel = 0;
+let canAnswer = true;
+
+const questionDiv = document.getElementById("question");
+const gameArea    = document.getElementById("game-area");
+const messageDiv  = document.getElementById("message");
+const controlsDiv = document.getElementById("controls");
+
+function clearUI() {
+  questionDiv.textContent = "";
+  gameArea.innerHTML = "";
+  controlsDiv.innerHTML = "";
+  messageDiv.textContent = "";
+  messageDiv.className = "";
+  canAnswer = true;
+}
+
+function goNextLevel() {
+  currentLevel++;
+  if (currentLevel >= levels.length) {
+    showCongratulations();
+  } else {
+    setTimeout(loadLevel, 900);
+  }
+}
+
+function showCongratulations() {
+  clearUI();
+  questionDiv.textContent = "🎉 مبروك! أنهيت جميع مراحل اللعبة.";
+  messageDiv.textContent  = "رائع! أنت خبير في التمييز بين المجموعات الأكثر والأقل عددًا 👏 استمر في اللعب!";
+  messageDiv.className    = "correct";
+
+  const replayBtn = document.createElement("button");
+  replayBtn.className = "btn btn-main";
+  replayBtn.textContent = "إعادة اللعب 🔁";
+  replayBtn.onclick = () => {
+    currentLevel = 0;
+    loadLevel();
+  };
+  controlsDiv.appendChild(replayBtn);
+}
+
+function loadLevel() {
+  clearUI();
+  const level = levels[currentLevel];
+
+  // نوع السؤال
+  if (level.type === "choose") {
+    if (level.mode === "more") questionDiv.textContent = "أي مجموعة فيها عناصر أكثر عددًا؟";
+    else questionDiv.textContent = "أي مجموعة فيها عناصر أقل عددًا؟";
+
+    renderChoose(level);
+  }
+
+  else if (level.type === "build") {
+    if (level.mode === "more") questionDiv.textContent = "كوّن مجموعة ثانية فيها عناصر أكثر من النموذج.";
+    else questionDiv.textContent = "كوّن مجموعة ثانية فيها عناصر أقل من النموذج.";
+
+    renderBuild(level);
+  }
+}
+
+/* --------- نوع 1: اختيار المجموعة --------- */
+function renderChoose(level) {
+  createStaticGroup("مجموعة ١", "left",  level.left,  level.icon, level, true);
+  createStaticGroup("مجموعة ٢", "right", level.right, level.icon, level, true);
+}
+
+function createStaticGroup(title, side, count, icon, level, clickable) {
+  const group = document.createElement("div");
+  group.className = "group";
+  if (clickable) group.classList.add("clickable");
+
+  const label = document.createElement("div");
+  label.className = "group-title";
+  label.textContent = title;
+  group.appendChild(label);
+
+  const row = document.createElement("div");
+  row.className = "items-row";
+
+  for (let i = 0; i < count; i++) {
+    const cell = document.createElement("div");
+    cell.className = "item";
+    cell.textContent = icon;
+    row.appendChild(cell);
+  }
+
+  group.appendChild(row);
+
+  group.onclick = function () {
+    if (!canAnswer || !clickable) return;
+    handleChooseAnswer(side, level);
+  };
+
+  gameArea.appendChild(group);
+}
+
+function handleChooseAnswer(side, level) {
+  const left  = level.left;
+  const right = level.right;
+  let correctSide;
+
+  if (level.mode === "more") correctSide = left > right ? "left" : "right";
+  else                       correctSide = left < right ? "left" : "right";
+
+  if (side === correctSide) {
+    messageDiv.textContent = "✔️ أحسنت! اختيارك صحيح.";
+    messageDiv.className   = "correct";
+    canAnswer = false;
+    goNextLevel();
+  } else {
+    messageDiv.textContent = "❌ إجابة غير صحيحة، حاول مرة أخرى.";
+    messageDiv.className   = "wrong";
+  }
+}
+
+/* --------- نوع 2: بناء مجموعة --------- */
+function renderBuild(level) {
+  const modelGroup = document.createElement("div");
+  modelGroup.className = "group";
+
+  const modelLabel = document.createElement("div");
+  modelLabel.className = "group-title";
+  modelLabel.textContent = "مجموعة النموذج";
+  modelGroup.appendChild(modelLabel);
+
+  const modelRow = document.createElement("div");
+  modelRow.className = "items-row";
+  for (let i = 0; i < level.base; i++) {
+    const cell = document.createElement("div");
+    cell.className = "item";
+    cell.textContent = level.icon;
+    modelRow.appendChild(cell);
+  }
+  modelGroup.appendChild(modelRow);
+  gameArea.appendChild(modelGroup);
+
+  const studentGroup = document.createElement("div");
+  studentGroup.className = "group";
+
+  const stuLabel = document.createElement("div");
+  stuLabel.className = "group-title";
+  stuLabel.textContent = "مجموعة التلميذ";
+  studentGroup.appendChild(stuLabel);
+
+  const stuRow = document.createElement("div");
+  stuRow.className = "items-row";
+  studentGroup.appendChild(stuRow);
+
+  gameArea.appendChild(studentGroup);
+
+  let count = 0;
+
+  function updateRow() {
+    stuRow.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const cell = document.createElement("div");
+      cell.className = "item";
+      cell.textContent = level.icon;
+      stuRow.appendChild(cell);
+    }
+  }
+
+  const addBtn = document.createElement("button");
+  addBtn.className = "btn btn-main";
+  addBtn.textContent = "إضافة عنصر";
+  addBtn.onclick = () => {
+    if (count < 12) count++;
+    updateRow();
+  };
+
+  const removeBtn = document.createElement("button");
+  removeBtn.className = "btn btn-light";
+  removeBtn.textContent = "حذف عنصر";
+  removeBtn.onclick = () => {
+    if (count > 0) count--;
+    updateRow();
+  };
+
+  const checkBtn = document.createElement("button");
+  checkBtn.className = "btn btn-light";
+  checkBtn.textContent = "تحقّق من الإجابة";
+  checkBtn.onclick = () => {
+    handleBuildCheck(level, count);
+  };
+
+  controlsDiv.appendChild(addBtn);
+  controlsDiv.appendChild(removeBtn);
+  controlsDiv.appendChild(checkBtn);
+}
+
+function handleBuildCheck(level, count) {
+  let ok = false;
+  if (level.mode === "more") ok = count > level.base;
+  else                      ok = count < level.base;
+
+  if (ok) {
+    messageDiv.textContent = "✔️ أحسنت! العدد الذي كوّنته صحيح.";
+    messageDiv.className   = "correct";
+    goNextLevel();
+  } else {
+    messageDiv.textContent = "❌ العدد لا يحقق الشرط. حاول تعديل العدد.";
+    messageDiv.className   = "wrong";
+  }
+}
+
+// بدء اللعبة
+loadLevel();
+</script>
+
+</body>
+</html>

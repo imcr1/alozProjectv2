@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>لعبة التصنيف وفق خاصية واحدة (لون - حجم - شكل)</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    direction: rtl;
+    text-align: center;
+    background: #f5f8ff;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 { margin-top: 10px; }
+  #stage-title { margin-top: 5px; font-size: 20px; }
+  #question { margin-top: 10px; font-size: 22px; font-weight: bold; }
+
+  #wheel-area { margin-top: 25px; }
+  #wheel-icon {
+    margin: 10px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #item-name { font-size: 20px; margin-bottom: 10px; }
+
+  #spin-btn {
+    padding: 10px 25px;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    background: #3498db;
+    color: white;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+  #spin-btn:disabled {
+    background: #95a5a6;
+    cursor: default;
+  }
+
+  #baskets-area {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+
+  .basket-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .basket {
+    width: 120px;
+    height: 120px;
+    background: white;
+    border-radius: 16px;
+    border: 3px solid #d0d7ff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: .2s;
+  }
+  .basket:hover {
+    transform: scale(1.08);
+    border-color: #82a0ff;
+  }
+
+  .size-dot {
+    border-radius: 50%;
+    background: black;
+  }
+
+  .basket-items {
+    min-height: 50px;
+    min-width: 120px;
+    background: #ffffffaa;
+    border-radius: 12px;
+    border: 2px dashed #d0d7ff;
+    padding: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .small-item { font-size: 28px; }
+
+  #message {
+    margin-top: 20px;
+    font-size: 22px;
+    font-weight: bold;
+  }
+  .correct { color: #27ae60; }
+  .wrong   { color: #e74c3c; }
+
+  #score {
+    margin-top: 15px;
+    font-size: 18px;
+  }
+
+</style>
+</head>
+<body>
+
+<h1>🎡 لعبة العجلة: التصنيف وفق خاصية واحدة</h1>
+<div id="stage-title"></div>
+<div id="question"></div>
+
+<div id="wheel-area">
+  <div id="wheel-icon">❓</div>
+  <div id="item-name"></div>
+  <button id="spin-btn">🎲 إدارة العجلة</button>
+</div>
+
+<div id="baskets-area"></div>
+
+<div id="message"></div>
+<div id="score"></div>
+
+<script>
+// العناصر
+const items = [
+  { icon: "🔴",   color: "red",    size: "small",  shape: "circle" },
+  { icon: "🟢", color: "green",  size: "medium", shape: "circle" },
+  { icon: "🟡",   color: "yellow", size: "large",  shape: "circle" },
+
+  { icon: "🟥",    color: "red",    size: "medium", shape: "square" },
+  { icon: "🟩",     color: "green",  size: "large",  shape: "square" },
+  { icon: "🟨",     color: "yellow", size: "small",  shape: "square" },
+
+  { icon: "🔺",     color: "red",    size: "small",  shape: "triangle" },
+  { icon: "🔻",     color: "red",    size: "large",  shape: "triangle" }
+];
+
+// مراحل
+const stages = [
+  {
+    id: "color",
+    title: "المرحلة 1: التصنيف حسب اللون",
+    label: "اللون",
+    rounds: 4,
+    baskets: [
+      { value: "red", icon: "🟥" },
+      { value: "yellow", icon: "🟨" },
+      { value: "green", icon: "🟩" }
+    ]
+  },
+  {
+    id: "size",
+    title: "المرحلة 2: التصنيف حسب الحجم",
+    label: "الحجم",
+    rounds: 4,
+    baskets: [
+      { value: "small"  },
+      { value: "medium" },
+      { value: "large"  }
+    ]
+  },
+  {
+    id: "shape",
+    title: "المرحلة 3: التصنيف حسب الشكل",
+    label: "الشكل",
+    rounds: 4,
+    baskets: [
+      { value: "circle",   icon: "⚪" },
+      { value: "square",   icon: "⬛" },
+      { value: "triangle", icon: "🔺" }
+    ]
+  }
+];
+
+let currentStageIndex = 0;
+let currentStage = stages[currentStageIndex];
+
+let currentItem  = null;
+let spinning     = false;
+let canAnswer    = false;
+let stageCount   = 0;
+let totalCorrect = 0;
+
+const stageTitle = document.getElementById("stage-title");
+const questionDiv= document.getElementById("question");
+const wheelIcon  = document.getElementById("wheel-icon");
+const itemNameDiv= document.getElementById("item-name");
+const spinBtn    = document.getElementById("spin-btn");
+const basketsArea= document.getElementById("baskets-area");
+const messageDiv = document.getElementById("message");
+const scoreDiv   = document.getElementById("score");
+
+spinBtn.onclick = startSpin;
+
+function initStage() {
+  stageCount = 0;
+  currentStage = stages[currentStageIndex];
+  stageTitle.textContent = currentStage.title;
+  questionDiv.textContent = "خاصية التصنيف: " + currentStage.label;
+  messageDiv.textContent = "";
+  wheelIcon.innerHTML = "❓";
+  wheelIcon.style.fontSize = "80px";
+  createBasketsForStage();
+}
+
+function createBasketsForStage() {
+  basketsArea.innerHTML = "";
+  currentStage.baskets.forEach(b => {
+    const col = document.createElement("div");
+    col.className = "basket-column";
+
+    const basket = document.createElement("div");
+    basket.className = "basket";
+    basket.dataset.value = b.value;
+
+    if (currentStage.id === "size") {
+      const dot = document.createElement("div");
+      dot.className = "size-dot";
+
+      if (b.value === "small")   { dot.style.width = "40px"; dot.style.height = "40px"; }
+      if (b.value === "medium")  { dot.style.width = "60px"; dot.style.height = "60px"; }
+      if (b.value === "large")   { dot.style.width = "85px"; dot.style.height = "85px"; }
+
+      basket.appendChild(dot);
+    } else {
+      basket.textContent = b.icon;
+    }
+
+    const itemsBox = document.createElement("div");
+    itemsBox.className = "basket-items";
+    itemsBox.id = "basket-items-" + currentStage.id + "-" + b.value;
+
+    basket.onclick = () => {
+      if (!canAnswer || !currentItem) return;
+      handleBasketClick(basket.dataset.value);
+    };
+
+    col.appendChild(basket);
+    col.appendChild(itemsBox);
+    basketsArea.appendChild(col);
+  });
+}
+
+function startSpin() {
+  if (spinning) return;
+  spinning = true;
+  canAnswer = false;
+  messageDiv.textContent = "";
+
+  let steps = 0;
+  const interval = setInterval(() => {
+    const temp = items[Math.floor(Math.random() * items.length)];
+    wheelIcon.textContent = temp.icon;
+    steps++;
+    if (steps > 12) {
+      clearInterval(interval);
+      spinning = false;
+      chooseItem();
+    }
+  }, 80);
+}
+
+function chooseItem() {
+  // نختار عنصر عشوائي من العناصر
+  currentItem = items[Math.floor(Math.random() * items.length)];
+
+  // في كل المراحل نعرض نفس الرمز تمامًا (مو دائرة سوداء)
+  wheelIcon.textContent = currentItem.icon;
+
+  // نغيّر حجم الرمز فقط في مرحلة "الحجم"
+  if (currentStage.id === "size") {
+    if (currentItem.size === "small") {
+      wheelIcon.style.fontSize = "20px";   // صغير لكن واضح
+    } else if (currentItem.size === "medium") {
+      wheelIcon.style.fontSize = "100px";   // متوسط
+    } else if (currentItem.size === "large") {
+      wheelIcon.style.fontSize = "300px";   // كبير وواضح
+    }
+  } else {
+    // في اللون والشكل نخليه بحجم ثابت
+    wheelIcon.style.fontSize = "80px";
+  }
+
+  itemNameDiv.textContent = currentItem.name;
+  canAnswer = true;
+}
+
+
+function handleBasketClick(value) {
+  const prop = currentStage.id;
+
+  if (currentItem[prop] === value) {
+    messageDiv.textContent = "✔️ أحسنت!";
+    messageDiv.className = "correct";
+
+    const box = document.getElementById("basket-items-" + currentStage.id + "-" + value);
+    const small = document.createElement("span");
+    small.className = "small-item";
+    small.textContent = currentItem.icon;
+    box.appendChild(small);
+
+    stageCount++;
+    totalCorrect++;
+    if (stageCount >= currentStage.rounds) {
+      goNextStageOrEnd();
+    }
+  } else {
+    messageDiv.textContent = "❌ خطأ، حاول مجددًا.";
+    messageDiv.className = "wrong";
+  }
+
+  canAnswer = false;
+  setTimeout(() => {
+    wheelIcon.innerHTML = "❓";
+    itemNameDiv.textContent = "";
+  }, 700);
+}
+
+function goNextStageOrEnd() {
+  currentStageIndex++;
+  if (currentStageIndex >= stages.length) {
+    messageDiv.textContent = "🎉 مبروك! أكملت كل المراحل!";
+    spinBtn.disabled = true;
+  } else {
+    messageDiv.textContent = "🌟 ممتاز! انتقل للمرحلة التالية.";
+    setTimeout(initStage, 900);
+  }
+}
+
+// بدء أول مرحلة
+initStage();
+</script>
+
+</body>
+</html>
