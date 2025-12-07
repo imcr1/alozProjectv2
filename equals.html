@@ -1,0 +1,1350 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ميزان التساوي - لعبة تعليمية</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts - Arabic Support -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated Background Elements */
+        .floating-shapes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .shape {
+            position: absolute;
+            opacity: 0.3;
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .shape:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .shape:nth-child(2) { top: 20%; left: 80%; animation-delay: 1s; }
+        .shape:nth-child(3) { top: 60%; left: 15%; animation-delay: 2s; }
+        .shape:nth-child(4) { top: 70%; left: 85%; animation-delay: 3s; }
+        .shape:nth-child(5) { top: 40%; left: 50%; animation-delay: 1.5s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        .container-main {
+            position: relative;
+            z-index: 1;
+            padding: 20px;
+        }
+        
+        /* Main Menu Styles */
+        .main-menu {
+            background: white;
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            margin: 50px auto;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .game-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.1);
+        }
+        
+        .creator-info {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-radius: 20px;
+            color: white;
+        }
+        
+        .creator-info img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid white;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .creator-info p {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .menu-btn {
+            width: 100%;
+            padding: 25px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            border-radius: 20px;
+            border: none;
+            margin: 15px 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .menu-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        .btn-play {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .btn-test {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .btn-help {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .btn-teacher {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-desc {
+            font-size: 1rem;
+            font-weight: 400;
+            display: block;
+            margin-top: 5px;
+            opacity: 0.9;
+        }
+        
+        /* Mascot */
+        .mascot {
+            text-align: center;
+            font-size: 5rem;
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        
+        .mascot-speech {
+            background: #fff3cd;
+            border: 3px solid #ffc107;
+            border-radius: 20px;
+            padding: 15px;
+            margin: 20px auto;
+            max-width: 400px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #856404;
+            position: relative;
+        }
+        
+        /* Game Screen Styles */
+        .game-screen {
+            display: none;
+            background: white;
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+        
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 30px;
+        }
+        
+        .stars-display {
+            text-align: center;
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        
+        .star {
+            color: #ffd700;
+            margin: 0 5px;
+            display: inline-block;
+            animation: starPulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes starPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        .score-display {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        /* Scale Container */
+        .scale-container {
+            position: relative;
+            margin: 40px auto;
+            max-width: 900px;
+        }
+        
+        .scale-base {
+            width: 100%;
+            height: 300px;
+            position: relative;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+        
+        .scale-beam {
+            position: absolute;
+            width: 80%;
+            height: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(0deg);
+            transition: transform 0.5s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .scale-beam.tilt-left {
+            transform: translate(-50%, -50%) rotate(-10deg);
+        }
+        
+        .scale-beam.tilt-right {
+            transform: translate(-50%, -50%) rotate(10deg);
+        }
+        
+        .scale-beam.balanced {
+            transform: translate(-50%, -50%) rotate(0deg);
+        }
+        
+        .scale-pivot {
+            position: absolute;
+            width: 40px;
+            height: 80px;
+            background: #333;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 5px;
+            z-index: -1;
+        }
+        
+        .scale-pan {
+            position: absolute;
+            width: 250px;
+            min-height: 150px;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border: 5px solid #e17055;
+            border-radius: 20px;
+            top: 60%;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .scale-pan-left {
+            right: 65%;
+        }
+        
+        .scale-pan-right {
+            left: 65%;
+        }
+        
+        .pan-counter {
+            position: absolute;
+            bottom: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        /* Game Items */
+        .game-item {
+            width: 60px;
+            height: 60px;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: transform 0.2s ease;
+            animation: itemAppear 0.3s ease-out;
+        }
+        
+        @keyframes itemAppear {
+            from { opacity: 0; transform: scale(0); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .game-item:hover {
+            transform: scale(1.2);
+        }
+        
+        .game-item:active {
+            cursor: grabbing;
+        }
+        
+        /* Item Bank */
+        .item-bank {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 40px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .item-bank-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .item-bank-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        .bank-item {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .bank-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* Decision Buttons */
+        .decision-container {
+            display: none;
+            text-align: center;
+            margin-top: 40px;
+        }
+        
+        .decision-question {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+        
+        .decision-buttons {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .decision-btn {
+            width: 200px;
+            height: 200px;
+            font-size: 4rem;
+            border-radius: 30px;
+            border: none;
+            font-weight: 900;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            cursor: pointer;
+        }
+        
+        .decision-btn:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+        
+        .btn-equal {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+        }
+        
+        .btn-not-equal {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .decision-label {
+            display: block;
+            font-size: 1.3rem;
+            margin-top: 10px;
+        }
+        
+        /* Feedback Modal */
+        .feedback-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .feedback-modal {
+            background: white;
+            border-radius: 30px;
+            padding: 50px;
+            text-align: center;
+            max-width: 500px;
+            animation: modalPop 0.3s ease-out;
+        }
+        
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .feedback-icon {
+            font-size: 8rem;
+            margin-bottom: 20px;
+        }
+        
+        .feedback-message {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+        
+        .feedback-btn {
+            padding: 20px 40px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border-radius: 20px;
+            border: none;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .feedback-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        /* Control Buttons */
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 15px 30px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            border-radius: 15px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        
+        .btn-back {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-reset {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            color: #333;
+        }
+        
+        .btn-sound {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        /* Test Mode Specific */
+        .test-mode .scale-pan {
+            pointer-events: none;
+        }
+        
+        /* Teacher Panel */
+        .teacher-panel {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+        
+        .teacher-panel h3 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .teacher-control {
+            margin: 20px 0;
+        }
+        
+        .teacher-control label {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .teacher-control select,
+        .teacher-control input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            border: 2px solid #667eea;
+            margin-top: 10px;
+        }
+        
+        /* Help Screen */
+        .help-screen {
+            text-align: center;
+        }
+        
+        .help-screen h2 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 30px;
+        }
+        
+        .help-step {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .help-step-number {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            background: #667eea;
+            color: white;
+            border-radius: 50%;
+            line-height: 50px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-left: 15px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2.5rem;
+            }
+            
+            .menu-btn {
+                font-size: 1.5rem;
+                padding: 20px;
+            }
+            
+            .scale-pan {
+                width: 180px;
+                min-height: 120px;
+            }
+            
+            .scale-pan-left {
+                right: 60%;
+            }
+            
+            .scale-pan-right {
+                left: 60%;
+            }
+            
+            .game-item {
+                width: 45px;
+                height: 45px;
+                font-size: 2rem;
+            }
+            
+            .decision-btn {
+                width: 150px;
+                height: 150px;
+                font-size: 3rem;
+            }
+        }
+        
+        /* Achievement Badge */
+        .achievement-badge {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: white;
+            border-radius: 30px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            z-index: 2000;
+            animation: badgeAppear 0.5s ease-out forwards;
+        }
+        
+        @keyframes badgeAppear {
+            to { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .achievement-badge h2 {
+            color: #667eea;
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+        
+        .achievement-icon {
+            font-size: 8rem;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Background Shapes -->
+    <div class="floating-shapes">
+        <div class="shape" style="font-size: 3rem;">🎈</div>
+        <div class="shape" style="font-size: 3rem;">⭐</div>
+        <div class="shape" style="font-size: 3rem;">🎨</div>
+        <div class="shape" style="font-size: 3rem;">🎯</div>
+        <div class="shape" style="font-size: 3rem;">🌟</div>
+    </div>
+
+    <div class="container-main">
+        <!-- Main Menu -->
+        <div id="mainMenu" class="main-menu">
+            <div class="mascot">⚖️</div>
+            <h1 class="game-title">ميزان التساوي</h1>
+            
+            <div class="creator-info">
+                <img src="pfp.jpeg" alt="صورة المطور" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23667eea%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22white%22 font-size=%2240%22%3E👨‍🏫%3C/text%3E%3C/svg%3E'">
+                <p>فكرة وتنفيذ: أ.علي إبراهيم عبد الرسول</p>
+            </div>
+            
+            <div class="mascot-speech">
+                لنرى من الأذكى اليوم! 🎯
+            </div>
+            
+            <button class="menu-btn btn-play" onclick="startGame('build')">
+                🎮 لنلعب
+                <span class="btn-desc">كوّن مجموعتين متساويتين</span>
+            </button>
+            
+            <button class="menu-btn btn-test" onclick="startGame('test')">
+                📝 اختبر نفسك
+                <span class="btn-desc">اختر: متساويان (=) أو غير متساويين (≠)</span>
+            </button>
+            
+            <button class="menu-btn btn-help" onclick="showHelp()">
+                ❓ كيف ألعب؟
+                <span class="btn-desc">شرح اللعبة خطوة بخطوة</span>
+            </button>
+            
+            <button class="menu-btn btn-teacher" onclick="showTeacherPanel()">
+                👨‍🏫 لوحة المعلم
+                <span class="btn-desc">إعدادات متقدمة للمعلم</span>
+            </button>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="gameScreen" class="game-screen">
+            <!-- Progress Bar -->
+            <div class="progress-container">
+                <div class="stars-display" id="starsDisplay"></div>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                         id="progressBar" role="progressbar" style="width: 0%"></div>
+                </div>
+                <div class="score-display" id="scoreDisplay">النتيجة: 0 / 0</div>
+            </div>
+
+            <!-- Mascot Guide -->
+            <div class="mascot-speech" id="mascotMessage">
+                ابدأ بسحب العناصر! 🎯
+            </div>
+
+            <!-- Scale Container -->
+            <div class="scale-container">
+                <div class="scale-base">
+                    <div class="scale-pivot"></div>
+                    <div class="scale-beam" id="scaleBeam"></div>
+                    
+                    <!-- Left Pan -->
+                    <div class="scale-pan scale-pan-left" id="leftPan">
+                        <div class="pan-counter" id="leftCounter">0</div>
+                    </div>
+                    
+                    <!-- Right Pan -->
+                    <div class="scale-pan scale-pan-right" id="rightPan">
+                        <div class="pan-counter" id="rightCounter">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decision Buttons -->
+            <div class="decision-container" id="decisionContainer">
+                <div class="decision-question">هل المجموعتان متساويتان؟</div>
+                <div class="decision-buttons">
+                    <button class="decision-btn btn-equal" onclick="makeDecision(true)">
+                        =
+                        <span class="decision-label">متساويتان</span>
+                    </button>
+                    <button class="decision-btn btn-not-equal" onclick="makeDecision(false)">
+                        ≠
+                        <span class="decision-label">غير متساويتين</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Item Bank (Build Mode Only) -->
+            <div class="item-bank" id="itemBank">
+                <div class="item-bank-title">اسحب العناصر من هنا 👇</div>
+                <div class="item-bank-items" id="itemBankItems"></div>
+            </div>
+
+            <!-- Control Buttons -->
+            <div class="control-buttons">
+                <button class="control-btn btn-back" onclick="backToMenu()">
+                    🏠 القائمة الرئيسية
+                </button>
+                <button class="control-btn btn-reset" onclick="resetRound()">
+                    🔄 إعادة المحاولة
+                </button>
+                <button class="control-btn btn-sound" onclick="toggleSound()">
+                    <span id="soundIcon">🔊</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Help Screen -->
+        <div id="helpScreen" class="game-screen help-screen">
+            <h2>كيف تلعب ميزان التساوي؟ 🎮</h2>
+            
+            <div class="help-step">
+                <span class="help-step-number">1</span>
+                انظر إلى الكفة اليسرى - ستجد عناصر فيها
+            </div>
+            
+            <div class="help-step">
+                <span class="help-step-number">2</span>
+                اسحب العناصر من الأسفل إلى الكفة اليمنى
+            </div>
+            
+            <div class="help-step">
+                <span class="help-step-number">3</span>
+                اجعل العدد متساويًا في الكفتين
+            </div>
+            
+            <div class="help-step">
+                <span class="help-step-number">4</span>
+                عندما يستوي الميزان، اختر: متساويتان (=) أو غير متساويتين (≠)
+            </div>
+            
+            <div class="help-step">
+                <span class="help-step-number">5</span>
+                اجمع النجوم واحصل على الأوسمة! ⭐
+            </div>
+            
+            <div class="control-buttons">
+                <button class="control-btn btn-back" onclick="backToMenu()">
+                    🏠 العودة للقائمة
+                </button>
+            </div>
+        </div>
+
+        <!-- Teacher Panel -->
+        <div id="teacherPanel" class="game-screen">
+            <h2 style="text-align: center; color: #667eea; font-weight: 700;">لوحة تحكم المعلم 👨‍🏫</h2>
+            
+            <div class="teacher-panel">
+                <h3>إعدادات اللعبة</h3>
+                
+                <div class="teacher-control">
+                    <label>نوع العناصر:</label>
+                    <select id="itemTypeSelect" onchange="updateSettings()">
+                        <option value="all">جميع الأنواع (عشوائي)</option>
+                        <option value="fruits">فواكه فقط 🍎</option>
+                        <option value="toys">ألعاب فقط 🎮</option>
+                        <option value="shapes">أشكال هندسية فقط ⭐</option>
+                        <option value="school">أدوات مدرسية فقط ✏️</option>
+                    </select>
+                </div>
+                
+                <div class="teacher-control">
+                    <label>الحد الأعلى للأعداد:</label>
+                    <select id="maxNumberSelect" onchange="updateSettings()">
+                        <option value="5">من 1 إلى 5 (سهل)</option>
+                        <option value="9" selected>من 1 إلى 9 (متوسط)</option>
+                        <option value="15">من 1 إلى 15 (صعب)</option>
+                    </select>
+                </div>
+                
+                <div class="teacher-control">
+                    <label>
+                        <input type="checkbox" id="soundToggle" checked onchange="updateSettings()">
+                        تفعيل الأصوات
+                    </label>
+                </div>
+                
+                <div class="teacher-control">
+                    <label>
+                        <input type="checkbox" id="buildModeToggle" checked onchange="updateSettings()">
+                        تفعيل وضع البناء
+                    </label>
+                </div>
+                
+                <div class="teacher-control">
+                    <label>
+                        <input type="checkbox" id="testModeToggle" checked onchange="updateSettings()">
+                        تفعيل وضع الاختبار
+                    </label>
+                </div>
+                
+                <div class="teacher-control">
+                    <label>سرعة اللعبة:</label>
+                    <select id="speedSelect" onchange="updateSettings()">
+                        <option value="slow">بطيء (للمبتدئين)</option>
+                        <option value="normal" selected>عادي</option>
+                        <option value="fast">سريع (للمتقدمين)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <button class="control-btn btn-back" onclick="backToMenu()">
+                    🏠 العودة للقائمة
+                </button>
+                <button class="control-btn btn-play" onclick="saveTeacherSettings()">
+                    💾 حفظ الإعدادات
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Overlay -->
+    <div class="feedback-overlay" id="feedbackOverlay">
+        <div class="feedback-modal">
+            <div class="feedback-icon" id="feedbackIcon"></div>
+            <div class="feedback-message" id="feedbackMessage"></div>
+            <button class="feedback-btn" onclick="closeFeedback()">متابعة</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Game State
+        const gameState = {
+            mode: 'build', // 'build' or 'test'
+            leftCount: 0,
+            rightCount: 0,
+            currentItems: [],
+            score: 0,
+            totalRounds: 0,
+            correctAnswers: 0,
+            stars: 0,
+            soundEnabled: true,
+            settings: {
+                itemType: 'all',
+                maxNumber: 9,
+                buildModeEnabled: true,
+                testModeEnabled: true,
+                speed: 'normal'
+            }
+        };
+
+        // Item Library
+        const itemLibrary = {
+            fruits: ['🍎', '🍌', '🍓', '🍊', '🍇', '🍉', '🍑', '🍒'],
+            toys: ['⚽', '🚗', '🧸', '🎮', '🎲', '🪀', '🎯', '🎨'],
+            shapes: ['🔴', '🔵', '🟡', '🟢', '⭐', '🔶', '🔷', '⬛'],
+            school: ['✏️', '📏', '📚', '✂️', '🖍️', '📐', '🖊️', '📝']
+        };
+
+        // Sound Effects (using Web Audio API for simple tones)
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (!gameState.soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            switch(type) {
+                case 'success':
+                    oscillator.frequency.value = 523.25; // C5
+                    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                    break;
+                case 'error':
+                    oscillator.frequency.value = 200;
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                    break;
+                case 'click':
+                    oscillator.frequency.value = 800;
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.1);
+                    break;
+            }
+        }
+
+        // Get random item
+        function getRandomItem() {
+            const type = gameState.settings.itemType === 'all' 
+                ? Object.keys(itemLibrary)[Math.floor(Math.random() * 4)]
+                : gameState.settings.itemType;
+            
+            const items = itemLibrary[type];
+            return items[Math.floor(Math.random() * items.length)];
+        }
+
+        // Start Game
+        function startGame(mode) {
+            playSound('click');
+            gameState.mode = mode;
+            gameState.score = 0;
+            gameState.totalRounds = 0;
+            gameState.correctAnswers = 0;
+            gameState.stars = 0;
+            
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'block';
+            document.getElementById('helpScreen').style.display = 'none';
+            document.getElementById('teacherPanel').style.display = 'none';
+            
+            if (mode === 'build') {
+                document.getElementById('itemBank').style.display = 'block';
+            } else {
+                document.getElementById('itemBank').style.display = 'none';
+            }
+            
+            updateStarsDisplay();
+            updateScoreDisplay();
+            generateRound();
+        }
+
+        // Generate Round
+        function generateRound() {
+            gameState.totalRounds++;
+            
+            // Clear pans
+            document.getElementById('leftPan').innerHTML = '<div class="pan-counter" id="leftCounter">0</div>';
+            document.getElementById('rightPan').innerHTML = '<div class="pan-counter" id="rightCounter">0</div>';
+            document.getElementById('decisionContainer').style.display = 'none';
+            
+            // Get random item type for this round
+            const item = getRandomItem();
+            gameState.currentItems = [item];
+            
+            if (gameState.mode === 'build') {
+                // Build mode: left pan filled, right pan empty
+                gameState.leftCount = Math.floor(Math.random() * gameState.settings.maxNumber) + 1;
+                gameState.rightCount = 0;
+                
+                populatePan('left', item, gameState.leftCount);
+                updateItemBank(item);
+                updateMascotMessage('اسحب العناصر لتساوي الكفتين! 🎯');
+            } else {
+                // Test mode: both pans filled
+                gameState.leftCount = Math.floor(Math.random() * gameState.settings.maxNumber) + 1;
+                
+                // 50% chance of equal, 50% chance of different
+                if (Math.random() < 0.5) {
+                    gameState.rightCount = gameState.leftCount;
+                } else {
+                    gameState.rightCount = Math.floor(Math.random() * gameState.settings.maxNumber) + 1;
+                    // Make sure they're different
+                    while (gameState.rightCount === gameState.leftCount) {
+                        gameState.rightCount = Math.floor(Math.random() * gameState.settings.maxNumber) + 1;
+                    }
+                }
+                
+                populatePan('left', item, gameState.leftCount);
+                populatePan('right', item, gameState.rightCount);
+                document.getElementById('decisionContainer').style.display = 'block';
+                updateMascotMessage('هل المجموعتان متساويتان؟ 🤔');
+            }
+            
+            updateScale();
+            updateCounters();
+            updateScoreDisplay();
+        }
+
+        // Populate Pan
+        function populatePan(side, item, count) {
+            const pan = document.getElementById(side + 'Pan');
+            const counter = document.getElementById(side + 'Counter');
+            
+            for (let i = 0; i < count; i++) {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'game-item';
+                itemDiv.textContent = item;
+                itemDiv.draggable = false; // Items in pans are not draggable in test mode
+                pan.appendChild(itemDiv);
+            }
+        }
+
+        // Update Item Bank
+        function updateItemBank(item) {
+            const bankItems = document.getElementById('itemBankItems');
+            bankItems.innerHTML = '';
+            
+            // Create 15 items in the bank
+            for (let i = 0; i < 15; i++) {
+                const bankItem = document.createElement('div');
+                bankItem.className = 'bank-item';
+                bankItem.textContent = item;
+                bankItem.onclick = function() {
+                    addItemToRightPan(item);
+                };
+                bankItems.appendChild(bankItem);
+            }
+        }
+
+        // Add Item to Right Pan
+        function addItemToRightPan(item) {
+            if (gameState.mode !== 'build') return;
+            
+            playSound('click');
+            gameState.rightCount++;
+            
+            const rightPan = document.getElementById('rightPan');
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'game-item';
+            itemDiv.textContent = item;
+            itemDiv.onclick = function() {
+                removeItemFromRightPan(this);
+            };
+            rightPan.appendChild(itemDiv);
+            
+            updateScale();
+            updateCounters();
+            updateMascotMessage(getMascotMessage());
+            
+            // Show decision buttons when balanced
+            if (gameState.leftCount === gameState.rightCount) {
+                document.getElementById('decisionContainer').style.display = 'block';
+                updateMascotMessage('الميزان متساوٍ! ما رأيك؟ 🤔');
+            } else {
+                document.getElementById('decisionContainer').style.display = 'none';
+            }
+        }
+
+        // Remove Item from Right Pan
+        function removeItemFromRightPan(itemDiv) {
+            if (gameState.mode !== 'build') return;
+            
+            playSound('click');
+            gameState.rightCount--;
+            itemDiv.remove();
+            
+            updateScale();
+            updateCounters();
+            updateMascotMessage(getMascotMessage());
+            document.getElementById('decisionContainer').style.display = 'none';
+        }
+
+        // Get Mascot Message
+        function getMascotMessage() {
+            const diff = gameState.leftCount - gameState.rightCount;
+            
+            if (diff === 0) {
+                return 'رائع! الميزان متساوٍ الآن! ⚖️';
+            } else if (diff > 0) {
+                if (diff === 1) return 'أضف عنصرًا واحدًا فقط! 👍';
+                if (diff <= 3) return 'اقتربت! أضف المزيد! 💪';
+                return 'أضف عناصر أكثر! 🎯';
+            } else {
+                return 'كثير جدًا! احذف بعض العناصر! ⚠️';
+            }
+        }
+
+        // Update Scale
+        function updateScale() {
+            const beam = document.getElementById('scaleBeam');
+            beam.className = 'scale-beam';
+            
+            if (gameState.leftCount > gameState.rightCount) {
+                beam.classList.add('tilt-left');
+            } else if (gameState.leftCount < gameState.rightCount) {
+                beam.classList.add('tilt-right');
+            } else {
+                beam.classList.add('balanced');
+            }
+        }
+
+        // Update Counters
+        function updateCounters() {
+            document.getElementById('leftCounter').textContent = gameState.leftCount;
+            document.getElementById('rightCounter').textContent = gameState.rightCount;
+        }
+
+        // Update Mascot Message
+        function updateMascotMessage(message) {
+            document.getElementById('mascotMessage').textContent = message;
+        }
+
+        // Make Decision
+        function makeDecision(isEqual) {
+            playSound('click');
+            
+            const actuallyEqual = gameState.leftCount === gameState.rightCount;
+            const correct = isEqual === actuallyEqual;
+            
+            if (correct) {
+                gameState.correctAnswers++;
+                gameState.score++;
+                playSound('success');
+                
+                let message = 'رائع! ';
+                if (actuallyEqual) {
+                    message += `كلاهما ${gameState.leftCount} عناصر! ✓`;
+                } else {
+                    message += `هنا ${gameState.leftCount} وهناك ${gameState.rightCount}! ✓`;
+                }
+                
+                showFeedback(true, message);
+                
+                // Check for stars
+                if (gameState.correctAnswers % 5 === 0) {
+                    gameState.stars++;
+                    updateStarsDisplay();
+                    
+                    // Check for achievement
+                    if (gameState.correctAnswers === 10) {
+                        setTimeout(() => showAchievement(), 1000);
+                    }
+                }
+            } else {
+                playSound('error');
+                
+                let message = 'حاول مرة أخرى! ';
+                if (actuallyEqual) {
+                    message += `كلاهما ${gameState.leftCount} عناصر.`;
+                } else {
+                    message += `هنا ${gameState.leftCount} وهناك ${gameState.rightCount}.`;
+                }
+                
+                showFeedback(false, message);
+            }
+            
+            updateScoreDisplay();
+        }
+
+        // Show Feedback
+        function showFeedback(success, message) {
+            const overlay = document.getElementById('feedbackOverlay');
+            const icon = document.getElementById('feedbackIcon');
+            const messageDiv = document.getElementById('feedbackMessage');
+            
+            icon.textContent = success ? '✓' : '✖';
+            icon.style.color = success ? '#38ef7d' : '#f5576c';
+            messageDiv.textContent = message;
+            messageDiv.style.color = success ? '#11998e' : '#f5576c';
+            
+            overlay.style.display = 'flex';
+        }
+
+        // Close Feedback
+        function closeFeedback() {
+            playSound('click');
+            document.getElementById('feedbackOverlay').style.display = 'none';
+            generateRound();
+        }
+
+        // Show Achievement
+        function showAchievement() {
+            const badge = document.createElement('div');
+            badge.className = 'achievement-badge';
+            badge.innerHTML = `
+                <h2>مبروك! 🎉</h2>
+                <div class="achievement-icon">🏆</div>
+                <p style="font-size: 1.8rem; font-weight: 700; color: #667eea;">
+                    حصلت على وسام "خبير التساوي"!
+                </p>
+                <button class="feedback-btn" onclick="this.parentElement.remove()">رائع!</button>
+            `;
+            document.body.appendChild(badge);
+            playSound('success');
+        }
+
+        // Update Stars Display
+        function updateStarsDisplay() {
+            const starsDiv = document.getElementById('starsDisplay');
+            starsDiv.innerHTML = '';
+            
+            for (let i = 0; i < gameState.stars; i++) {
+                const star = document.createElement('span');
+                star.className = 'star';
+                star.textContent = '⭐';
+                starsDiv.appendChild(star);
+            }
+            
+            // Update progress bar
+            const progress = (gameState.correctAnswers % 5) * 20;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
+
+        // Update Score Display
+        function updateScoreDisplay() {
+            document.getElementById('scoreDisplay').textContent = 
+                `النتيجة: ${gameState.correctAnswers} / ${gameState.totalRounds}`;
+        }
+
+        // Reset Round
+        function resetRound() {
+            playSound('click');
+            generateRound();
+        }
+
+        // Back to Menu
+        function backToMenu() {
+            playSound('click');
+            document.getElementById('mainMenu').style.display = 'block';
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('helpScreen').style.display = 'none';
+            document.getElementById('teacherPanel').style.display = 'none';
+        }
+
+        // Show Help
+        function showHelp() {
+            playSound('click');
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('helpScreen').style.display = 'block';
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('teacherPanel').style.display = 'none';
+        }
+
+        // Show Teacher Panel
+        function showTeacherPanel() {
+            playSound('click');
+            document.getElementById('mainMenu').style.display = 'none';
+            document.getElementById('teacherPanel').style.display = 'block';
+            document.getElementById('gameScreen').style.display = 'none';
+            document.getElementById('helpScreen').style.display = 'none';
+            
+            // Load current settings
+            document.getElementById('itemTypeSelect').value = gameState.settings.itemType;
+            document.getElementById('maxNumberSelect').value = gameState.settings.maxNumber;
+            document.getElementById('soundToggle').checked = gameState.soundEnabled;
+            document.getElementById('buildModeToggle').checked = gameState.settings.buildModeEnabled;
+            document.getElementById('testModeToggle').checked = gameState.settings.testModeEnabled;
+            document.getElementById('speedSelect').value = gameState.settings.speed;
+        }
+
+        // Update Settings
+        function updateSettings() {
+            gameState.settings.itemType = document.getElementById('itemTypeSelect').value;
+            gameState.settings.maxNumber = parseInt(document.getElementById('maxNumberSelect').value);
+            gameState.soundEnabled = document.getElementById('soundToggle').checked;
+            gameState.settings.buildModeEnabled = document.getElementById('buildModeToggle').checked;
+            gameState.settings.testModeEnabled = document.getElementById('testModeToggle').checked;
+            gameState.settings.speed = document.getElementById('speedSelect').value;
+        }
+
+        // Save Teacher Settings
+        function saveTeacherSettings() {
+            updateSettings();
+            playSound('success');
+            alert('تم حفظ الإعدادات بنجاح! ✓');
+        }
+
+        // Toggle Sound
+        function toggleSound() {
+            gameState.soundEnabled = !gameState.soundEnabled;
+            document.getElementById('soundIcon').textContent = gameState.soundEnabled ? '🔊' : '🔇';
+            playSound('click');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add touch support for mobile
+            document.body.addEventListener('touchstart', function() {
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
