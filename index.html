@@ -558,7 +558,8 @@
                     select: new Audio('select.mp3'),
                     win: new Audio('win.mp3'),
                     nextlevel: new Audio('nextlevel.mp3'),
-                    wrong: new Audio('wrong.mp3')
+                    wrong: new Audio('wrong.mp3'),
+                    missed: new Audio('missed.mp3')
                 };
                 
                 // Level configurations
@@ -932,6 +933,7 @@
                         
                         if (isMatch) {
                             // Missed a matching candy
+                            this.playSound('missed');
                             this.score -= 2;
                             this.showFeedback('⚠️ فاتتك حلوى! -2', 'error', true);
                         }
