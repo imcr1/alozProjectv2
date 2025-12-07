@@ -552,6 +552,15 @@
                 // Property order for levels (shuffled at game start)
                 this.propertyOrder = ['color', 'shape', 'size'];
                 
+                // Sound effects
+                this.sounds = {
+                    start: new Audio('start.mp3'),
+                    select: new Audio('select.mp3'),
+                    win: new Audio('win.mp3'),
+                    nextlevel: new Audio('nextlevel.mp3'),
+                    wrong: new Audio('wrong.mp3')
+                };
+                
                 // Level configurations
                 this.levelConfigs = {
                     1: { candySpeed: 2.0, spawnRate: 1200, matchTarget: 4 },
@@ -581,7 +590,15 @@
                 this.feedbackText = document.getElementById('feedbackText');
             }
             
+            playSound(soundName) {
+                if (this.sounds[soundName]) {
+                    this.sounds[soundName].currentTime = 0;
+                    this.sounds[soundName].play().catch(e => console.log('Sound play failed:', e));
+                }
+            }
+            
             start() {
+                this.playSound('start');
                 this.reset();
                 this.startScreen.classList.add('hidden');
                 this.gameOverScreen.classList.add('hidden');
@@ -787,6 +804,7 @@
                 allButtons.forEach(btn => btn.disabled = true);
                 
                 if (isCorrect) {
+                    this.playSound('select');
                     button.classList.add('correct');
                     this.showFeedback(`✅ صحيح! الخاصية المشتركة: ${Candy.getPropertyNameAr(this.commonProperty)} - ${Candy.getValueNameAr(this.commonProperty, this.commonValue)}`, 'success');
                     
@@ -801,6 +819,7 @@
                         this.startSortingPhase();
                     }, 1500);
                 } else {
+                    this.playSound('wrong');
                     button.classList.add('wrong');
                     this.score -= 5;
                     this.updateDisplays();
@@ -867,6 +886,7 @@
                 const isMatch = candy.matches(this.commonProperty, this.commonValue);
                 
                 if (isMatch) {
+                    this.playSound('select');
                     this.score += 10;
                     this.correctMatches++;
                     element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
@@ -874,6 +894,7 @@
                     element.style.opacity = '0';
                     this.showFeedback('🎉 +10 نقاط!', 'success', true);
                 } else {
+                    this.playSound('wrong');
                     this.score -= 5;
                     element.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
                     element.style.transform = 'rotate(180deg) scale(0.5)';
@@ -933,6 +954,7 @@
                 const config = this.levelConfigs[this.level];
                 
                 if (this.correctMatches >= config.matchTarget && this.level < 3) {
+                    this.playSound('nextlevel');
                     this.level++;
                     this.correctMatches = 0;
                     this.updateDisplays();
@@ -985,6 +1007,7 @@
             }
             
             victory() {
+                this.playSound('win');
                 this.isRunning = false;
                 this.stopIntervals();
                 this.clearConveyor();
